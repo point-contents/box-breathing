@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box Breathing</title>
+    <style>
+        body {
+            background-color: #32012F;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        #text {
+            position: absolute;
+            color: white;
+            font-size: 24px;
+        }
+        #speedControl {
+            position: absolute;
+            bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="text">Inhale</div>
+    <input type="number" id="speedControl" min="1" max="10" value="5" step="0.2">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, box, circle, textElement, speedControl;
+        let speed = 0.02;
+        let position = 0;
+
+        function init() {
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            
+            const geometry = new THREE.BoxGeometry(3, 3, 0.1);
+            const edges = new THREE.EdgesGeometry(geometry);
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+            box = new THREE.LineSegments(edges, lineMaterial);
+            scene.add(box);
+
+            
+            const circleGeometry = new THREE.CircleGeometry(0.1, 32);
+            const circleMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            circle = new THREE.Mesh(circleGeometry, circleMaterial);
+            scene.add(circle);
+
+            textElement = document.getElementById('text');
+            speedControl = document.getElementById('speedControl');
+            speedControl.addEventListener('input', (e) => {
+                speed = parseFloat(e.target.value) / 100;
+            });
+
+            animate();
+        }
+
+        function animate() {
+            position += speed;
+            const perimeter = 12; 
+            const progress = position % perimeter;
+            
+            if (progress < 3) {
+                circle.position.set(progress - 1.5, 1.5, 0);
+                textElement.innerText = 'Inhale';
+            } else if (progress < 6) {
+                circle.position.set(1.5, 1.5 - (progress - 3), 0);
+                textElement.innerText = 'Exhale';
+            } else if (progress < 9) {
+                circle.position.set(1.5 - (progress - 6), -1.5, 0);
+                textElement.innerText = 'Inhale';
+            } else {
+                circle.position.set(-1.5, -1.5 + (progress - 9), 0);
+                textElement.innerText = 'Exhale';
+            }
+
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+    </script>
+</body>
+</html>
+
